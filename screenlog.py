@@ -22,7 +22,7 @@ def input_thread(log_queue:queue.Queue, command_queue:queue.Queue, stdout_mutex:
 
 def log_thread(log_queue:queue.Queue, log_queue2:queue.Queue, config:configparser.ConfigParser, log:dict, log2:dict, wait_time:int):
     global exited_threads
-    file = open(log['filename'], 'a', buffering=1)
+    file = open(log['filename'], 'a', buffering=1, encoding='utf-8')
     while not exited_threads2:
         while not log_queue.empty():
             m = log_queue.get()
@@ -39,7 +39,7 @@ def log_thread(log_queue:queue.Queue, log_queue2:queue.Queue, config:configparse
             log2.update({'startdate': time.ctime(log2['starttime']), 'enddate': time.ctime(log2['endtime'])})
             log2['filename'] = config.get('logging', 'filename', fallback='screenlog.log') % log2
             log2['filename'] = log2['filename'].replace(':', '_').replace('/', '_').replace('\\', '_')
-            file = open(log2['filename'], 'a', buffering=1)
+            file = open(log2['filename'], 'a', buffering=1, encoding='utf-8')
     file.close()
     exited_threads += 1
 
@@ -118,7 +118,8 @@ def run(config:configparser.ConfigParser, configfile:str=None):
             time.sleep(wait_time)
             while not command_queue.empty():
                 command = command_queue.get()
-                if command.startswith('log'):
+                if command == 'exit': pass
+                elif command.startswith('log'):
                     arg = command.split(' ', 1)[1]
                     log_message(log_queue, arg)
                 elif command == 'reloadconf':
